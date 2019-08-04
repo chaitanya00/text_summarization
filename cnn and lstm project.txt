@@ -1,0 +1,121 @@
+a=open('newfie1.txt')    
+o=a.readlines()
+p=' '.join(o)
+q=p.split('\n')
+w=' '.join(q)
+qq=w.split('. ')
+pp=qq[0].split('   ')
+qq[0]=pp[1]
+qq[(len(qq)-1)]=pp[0]
+zz=open('newfilesum.txt',"rb")
+ass=zz.readlines()
+pk=''.join(str(ass))
+import numpy as np
+import re
+senlist = re.split(r'([a-zA-Z]+[\.])', pk)
+kg=0
+sen=[]
+for i in range(0,(len(senlist)//2)):
+  sen.append(senlist[kg]+senlist[kg+1])
+  kg=kg+2
+from sklearn .feature_extraction.text import CountVectorizer
+bow=CountVectorizer()
+matrix1=bow.fit_transform(qq)
+mm=matrix1.todense()  
+voc=bow.vocabulary_
+nmj=[]
+nmj=list(voc.values())
+lp=list(voc.keys())
+from sklearn .feature_extraction.text import CountVectorizer
+bow1=CountVectorizer()
+matrix2=bow1.fit_transform(sen)
+mm1=matrix2.todense()
+shp=mm1.shape  
+aj=mm.shape
+voc1=bow1.vocabulary_
+sumval=list(voc1.values())
+sumkey=list(voc1.keys())
+sumlist=[]
+doclist=[]
+nolist=[]
+for i in range(0,shp[0]): 
+  sumlist=[]
+  sumlist1=[]
+  for j in range(0,shp[1]):
+    if(mm1.item((i,j))==1):
+      for k in range(0,shp[1]):
+        if(sumval[k]==j):
+          sumlist.append(sumkey[k])
+          break
+  sumlist1=sorted(sumlist)            
+  for jpk in range(0,aj[0]):
+    doclist=[]
+    doclist1=[]
+    for jd in range(0,aj[1]):
+      if(mm.item(jpk,jd)==1):
+        for kp in range(0,aj[1]):
+          if(nmj[kp]==jd):
+            doclist.append(lp[kp])
+            break
+    doclist1=sorted(doclist)
+    if(sumlist1==doclist1):
+      nolist.append(jpk)
+      break  
+sort11=sorted(nolist)
+Y=[]    
+c22=0    
+for alal in range(0,aj[0]): 
+  c22=0
+  for kkkj in range(0,len(sort11)):
+    if(alal==sort11[kkkj]):
+      Y.append(1)
+      c22=1
+      break
+  if(c22==0):
+    Y.append(0)
+Y=np.array(Y)
+import keras
+from keras.preprocessing.text import one_hot
+from keras.preprocessing import sequence
+from keras.models import Sequential
+from keras.layers import Dense, Dropout,Flatten
+from keras.layers import Conv1D, MaxPooling1D
+from keras.layers import Embedding
+from keras.layers import LSTM
+one_hot_y=keras.utils.to_categorical(Y)
+vocab_size = 400
+encoded_docs = [one_hot(d, vocab_size) for d in qq]
+max_length = 60
+lstm_output_size = 70
+padded_docs = sequence.pad_sequences(encoded_docs, maxlen=max_length, padding='post')
+model = Sequential()
+model.add(Embedding(vocab_size, 50, input_length=max_length))
+model.add(MaxPooling1D(pool_size=2))
+model.add(LSTM(lstm_output_size))
+#model.add(Flatten())
+model.add(Dense(1, activation='sigmoid'))
+# compile the model
+model.compile(optimizer='adam', loss='binary_crossentropy', metrics=['acc'])
+# summarize the model
+#print(model.summary())
+model.fit(padded_docs, Y , epochs=10, verbose=0)
+# evaluate the model
+loss, accuracy = model.evaluate(padded_docs, Y, verbose=0)
+print('Accuracy: %f' % (accuracy*100))
+pred=model.predict(padded_docs)
+print(len(Y))
+mnmn=[]
+for i in range(0,len(pred)):
+  if((pred[i])>0):
+    mnmn.append(1)
+  else:
+    mnmn.append(0)
+#print((float(cc232)/len(y_test))*100)
+mnmm=np.array(mnmn)
+from sklearn.metrics import average_precision_score
+average_precision = average_precision_score(Y, mnmm)
+
+print('Average precision-recall score: {0:0.2f}'.format(
+      average_precision))
+from sklearn.metrics import confusion_matrix
+confusion_matrix(Y, mnmm)
