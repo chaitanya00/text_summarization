@@ -1,0 +1,196 @@
+﻿a=open('newfie1.txt')    
+o=a.readlines()
+p=' '.join(o)
+q=p.split('\n')
+w=' '.join(q)
+qq=w.split('. ')
+pp=qq[0].split('   ')
+qq[0]=pp[1]
+qq[(len(qq)-1)]=pp[0]
+zz=open('newfilesum.txt',"rb")
+ass=zz.readlines()
+pk=''.join(str(ass))
+import re
+senlist = re.split(r'([a-zA-Z]+[\.])', pk)
+kg=0
+sen=[]
+for i in range(0,(len(senlist)//2)):
+  sen.append(senlist[kg]+senlist[kg+1])
+  kg=kg+2
+from sklearn .feature_extraction.text import CountVectorizer
+bow1=CountVectorizer()
+matrix2=bow1.fit_transform(sen)
+mm1=matrix2.todense()
+noun=[]          
+from sklearn .feature_extraction.text import TfidfVectorizer
+tf_bow=TfidfVectorizer()
+matrix=tf_bow.fit_transform(qq)
+l=matrix.todense()
+llist=[]
+aj=l.shape
+c=0
+clist=[]
+for i in range(0,aj[0]):
+  s=0
+  for j in range(0,aj[1]):
+    s=s+(l.item((i,j)))
+  llist.append(s)
+  clist.append(c)
+  c+=1
+import nltk
+import numpy as np
+tk=nltk.word_tokenize(w)
+ww=nltk.pos_tag(tk)
+from sklearn .feature_extraction.text import CountVectorizer
+bow=CountVectorizer()
+matrix1=bow.fit_transform(qq)
+mm=matrix1.todense()
+noun=[]
+adv=[]
+adj=[]
+verb=[]
+cd=[]
+cn=0
+ca=0
+cv=0
+cdd=0
+cav=0
+voc=bow.vocabulary_
+lp=[]
+nmj=[]
+nmj=list(voc.values())
+lp=list(voc.keys())
+for i in range(0,aj[0]):
+  c11=0
+  for j in range(0,aj[1]):
+    c11=0
+    if(mm.item((i,j))==1):
+      for k in range(0,aj[1]):
+        if(nmj[k]==j):
+          for t in range(0,len(ww)):
+            tupp=ww[t]
+#            yy=tupp[0].decode("utf8")
+            yy=str(tupp[0])
+            if(lp[k]==yy):
+              if(tupp[1]=='NN'or tupp[1]=='NNP' or tupp[1]=='NNPS' or tupp[1]=='NNS'):
+                cn+=1
+                c11=1
+                break
+              elif(tupp[1]=='VB'or tupp[1]=='VVD'or tupp[1]=='VBN' or tupp[1]=='VBP' or tupp[1]=='VBZ' or tupp[1]=='VBG'):
+                cv+=1
+                c11=1
+                break
+              elif(tupp[1]=='JJ'or tupp[1]=='JJR'or tupp[1]=='JJS'):    
+                ca+=1
+                c11=1
+                break
+              elif(tupp[1]=='RB'or tupp[1]=='RBR'or tupp[1]=='RBS'):    
+                cav+=1
+                c11=1
+                break
+              elif(tupp[1]=='CD'):    
+                cdd+=1
+                c11=1
+                break
+          if(c11==1):
+            break                
+  noun.append(cn)    
+  adj.append(ca)
+  verb.append(cv)
+  cd.append(cdd)
+  adv.append(cav)
+  cn=0
+  ca=0
+  cv=0
+  cdd=0
+  cav=0
+klist=[]
+kklist=[]
+for i in range (0,len(noun)):
+    klist=[]
+    klist.append(llist[i])
+    klist.append(clist[i])
+    klist.append(noun[i])
+    klist.append(adv[i])
+    klist.append(adj[i])
+    klist.append(verb[i])
+    klist.append(cd[i])
+    kklist.append(klist)
+X=np.array(kklist)
+shp=mm1.shape
+voc1=bow1.vocabulary_
+sumval=list(voc1.values())
+sumkey=list(voc1.keys())
+sumlist=[]
+doclist=[]
+nolist=[]
+for i in range(0,shp[0]): 
+  sumlist=[]
+  sumlist1=[]
+  for j in range(0,shp[1]):
+    if(mm1.item((i,j))==1):
+      for k in range(0,shp[1]):
+        if(sumval[k]==j):
+          sumlist.append(sumkey[k])
+          break
+  sumlist1=sorted(sumlist)            
+  for jpk in range(0,aj[0]):
+    doclist=[]
+    doclist1=[]
+    for jd in range(0,aj[1]):
+      if(mm.item(jpk,jd)==1):
+        for kp in range(0,aj[1]):
+          if(nmj[kp]==jd):
+            doclist.append(lp[kp])
+            break
+    doclist1=sorted(doclist)
+    if(sumlist1==doclist1):
+      nolist.append(jpk)
+      break  
+sort11=sorted(nolist)
+Y=[]    
+c22=0    
+for alal in range(0,aj[0]): 
+  c22=0
+  for kkkj in range(0,len(sort11)):
+    if(alal==sort11[kkkj]):
+      Y.append(1)
+      c22=1
+      break
+  if(c22==0):
+    Y.append(0)
+Y=np.array(Y)
+from keras.layers import Input,Dense
+from keras.models import Model
+import keras
+from sklearn.cross_validation import train_test_split
+from sklearn.model_selection import train_test_split
+X_train,X_test,y_train,y_test=train_test_split(X,Y,test_size=.20)
+one_hot_y=keras.utils.to_categorical(y_train)
+#one_hot_y1=keras.utils.to_categorical(y_test)
+
+inp=Input(shape=(7,))
+hid1=Dense(5,activation='sigmoid')(inp)
+out=Dense(2,activation='softmax')(hid1)
+model=Model(inputs=inp,outputs=out)
+model.compile(optimizer='adam',loss='MSE',metrics=['accuracy'])
+model.fit(X_train,one_hot_y,epochs=10)
+pred=model.predict(X_test)
+cc232=0
+mnmn=[]
+for i in range(0,len(pred)):
+  mnmn.append(np.argmax(pred[i]))
+  if((np.argmax(pred[i]))==y_test[i]):
+    cc232+=1
+print((float(cc232)/len(y_test))*100)
+mnmm=np.array(mnmn)
+from sklearn.metrics import average_precision_score
+average_precision = average_precision_score(y_test, mnmm)
+
+print('Average precision-recall score: {0:0.2f}'.format(
+      average_precision))
+from sklearn.metrics import confusion_matrix
+confusion_matrix(y_test, mnmm)
+  
+  
+  
